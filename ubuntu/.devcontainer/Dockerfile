@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 # Avoid warnings by switching to noninteractive
 ENV DEBIAN_FRONTEND=noninteractive
@@ -18,27 +18,24 @@ RUN sed -i 's/http:\/\/archive.ubuntu.com\/ubuntu\//http:\/\/mirror.aarnet.edu.a
   && apt-get -y install git procps lsb-release iproute2 \
   #
   # Install Docker CE CLI
-  && apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
-  && curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
-  && add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" \
-  && apt-get update \
-  && apt-get install -y docker-ce-cli \
+  #&& apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release \
+  #&& curl -fsSL https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]')/gpg | (OUT=$(apt-key add - 2>&1) || echo $OUT) \
+  #&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/$(lsb_release -is | tr '[:upper:]' '[:lower:]') $(lsb_release -cs) stable" \
+  #&& apt-get update \
+  #&& apt-get install -y docker-ce-cli \
+  && apt-get install -y telnet inetutils-ping dnsutils \
   #
-  # Install Docker Compose
-  && curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
-  && chmod +x /usr/local/bin/docker-compose \
+  # Install Docker/Compose
+  && apt-get install -y docker.io docker-compose \
+  && apt-get install -y awscli \
+  #&& curl -sSL "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose \
+  #&& chmod +x /usr/local/bin/docker-compose \
   #
   # Create a non-root user to use if preferred - see https://aka.ms/vscode-remote/containers/non-root-user.
   && groupadd --gid $USER_GID $USERNAME \
   && useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -m $USERNAME \
-  # [Optional] Uncomment the next three lines to add sudo support
-  # && apt-get install -y sudo \
-  # && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-  # && chmod 0440 /etc/sudoers.d/$USERNAME \
-  # Install AWS SDK
-  && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
   && pip3 install boto3 wheel \
-  && pip3 install awscli --upgrade --user \
+  #&& pip3 install awscli --upgrade --user \
   && echo "PATH=$PATH:/root/.local/bin" >> /root/.bashrc \
   # Install Google Cloud SDK
   && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg  add - && apt-get update -y && apt-get install google-cloud-sdk -y \
